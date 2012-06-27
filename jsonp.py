@@ -1,10 +1,11 @@
 from flask import Flask, request, abort, make_response
 import re
-from urllib2 import urlopen
+import requests
 
 app = Flask(__name__)
 whitelist_patterns = (
     '^http://where.yahooapis.com/geocode',
+    '^http://kar2go.me/getInitData/',
 )
 whitelist_pattern = '('
 for pattern in whitelist_patterns:
@@ -25,17 +26,16 @@ def hello(url):
         url = "%s?%s" % (url, query_string)
     if not whitelist_re.match(url):
         abort(403)
-    u = urlopen(url)
-    if u.code != 200:
-        abort(u.code)
-    json = u.read()
-    jsonp = "%s(%s);" % (callback, json)
+    req = requests.get(url)
+    if req.status_code != 200:
+        abort(req.status_code)
+    jsonp = u"%s(%s);" % (callback, req.text)
     resp = make_response(jsonp)
-    resp.status_code = u.code
-    resp.headers = dict(u.headers)
-    resp.content_type = u.headers.get('Content-Type', 'application/json; charset=utf-8')
+    resp.status_code = req.status_code
+    resp.headers = req.headers
+    resp.content_type = req.headers.get('Content-Type', 'application/json; charset=utf-8')
     return resp
 
 if __name__ == "__main__":
     app.debug = True
-    app.run()
+    app.run('0.0.0.0', port=5001)
