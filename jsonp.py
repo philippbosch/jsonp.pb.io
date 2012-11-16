@@ -6,6 +6,7 @@ app = Flask(__name__)
 whitelist_patterns = (
     '^http://where.yahooapis.com/geocode',
     '^http://kar2go.me/getInitData/',
+    '^https://www.drive-now.com/php/metropolis/json.vehicle_filter',
 )
 whitelist_pattern = '('
 for pattern in whitelist_patterns:
@@ -32,8 +33,7 @@ def hello(url):
     jsonp = u"%s(%s);" % (callback, req.text)
     resp = make_response(jsonp)
     resp.status_code = req.status_code
-    resp.headers = req.headers
-    resp.content_type = req.headers.get('Content-Type', 'application/json; charset=utf-8')
+    resp.content_type = 'application/json; charset=utf-8'
     return resp
 
 if __name__ == "__main__":
